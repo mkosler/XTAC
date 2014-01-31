@@ -1,24 +1,46 @@
+local BASE = (...):match("(.-)[^%.]+$")
+local Core = require(BASE .. "core")
+
 local Entity = {}
 Entity.__index = Entity
 
-function Entity:new(world, x, y, width, height, name)
-    local body = love.physics.newBody(world, x, y, "dynamic")
+function Entity:new(x, y, width, height, bodyType)
+    local world = Core.getWorld()
+
+    local body = love.physics.newBody(world, x, y, bodyType)
     local shape = love.physics.newRectangleShape(width, height)
     local fixture = love.physics.newFixture(o.body, o.shape)
 
-    body:setFixedRotation(true)
-    fixture:setUserData(name)
-
-    return setmetatable({
+    return Core.getEntityManager():add(setmetatable({
         x = x,
         y = y,
         width = width,
         height = height,
-        name = name,
         body = body,
         shape = shape,
         fixture = fixture,
-    }, self)
+    }, self))
+end
+
+function Entity:destroy()
+    self.body:destroy()
+    Core.getEntityManager():remove(self)
+end
+
+function Entity:getCategory()
+    return self.fixture:getCategory()
+end
+
+function Entity:setCategory(...)
+    self.fixture:setCategory(...)
+end
+
+function Entity:getMask()
+    return self.fixture:getMask()
+end
+
+function Entity:setMask(...)
+    self.fixture:setMask(...)
 end
 
 function Entity:__tostring()
