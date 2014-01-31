@@ -1,12 +1,22 @@
 local Level = {}
 Level.__index = Level
 
+local function get(table, name)
+    for _,v in ipairs(table) do
+        if name == v.name then
+            return v
+        end
+    end
+    return nil
+end
+
 local function loadTilesets(tilesets)
     local t = {}
 
-    for _,tileset in ipairs(self.data.tilesets) do
+    for _,tileset in ipairs(tilesets) do
         local ts = {}
 
+        ts.name = tileset.name
         ts.image = love.graphics.newImage(tileset.image)
         ts.firstgid = tileset.firstgid
         ts.quads = {}
@@ -81,12 +91,26 @@ end
 
 function Level:load()
     self.data = require(self.filepath)
+    self.tilesets = loadTilesets(self.data.tilesets)
+    self.tilelayers, self.spriteBatches, self.objectgroups = loadLayers(self.data.layers, self.tilesets)
 end
 
 function Level:draw()
     for _,sb in ipairs(self.spriteBatches) do
         love.graphics.draw(sb)
     end
+end
+
+function Level:getTileset(name)
+    return get(self.tilesets, name)
+end
+
+function Level:getTilelayer(name)
+    return get(self.tilelayers, name)
+end
+
+function Level:getObjectgroup(name)
+    return get(self.objectgroups, name)
 end
 
 return setmetatable(Level, { __call = Level.new })
